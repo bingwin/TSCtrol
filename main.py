@@ -27,6 +27,7 @@ class MainWindow(Udpscanning,QWidget):
             super().__init__()
             self.setupUi(self)
             self.setWindowTitle(u"TS控制器")
+            self.setWindowIcon(QIcon(":/resources/ico/AppIcon.ico"))
             self.model = QStandardItemModel()
             self.model.setHorizontalHeaderLabels(['选择','设备ID','设备名', '设备IP', '消息'])
             self.tableViewDevice.setModel(self.model)
