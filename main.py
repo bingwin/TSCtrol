@@ -30,6 +30,7 @@ class MainWindow(Udpscanning,QWidget):
             self.setWindowIcon(QIcon(":/resources/ico/AppIcon.ico"))
             self.model = QStandardItemModel()
             self.model.setHorizontalHeaderLabels(['选择','设备ID','设备名', '设备IP', '消息'])
+
             self.tableViewDevice.setModel(self.model)
             self.tableViewDevice.setColumnWidth(0,30)
             self.tableViewDevice.setColumnWidth(1,0)
@@ -80,6 +81,7 @@ class MainWindow(Udpscanning,QWidget):
             regExp = QRegExp('^((2[0-4]\d|25[0-5]|[1-9]?\d|1\d{2})\.){3}(2[0-4]\d|25[0-5]|[01]?\d\d?):\d{1,5}$')
             self.lineEditIP.setValidator(QRegExpValidator(regExp, self))
             self.lineEditIP.setFont(QFont( "Timers" , 28 ,  QFont.Bold))
+            self.labelGroupName.setFont(QFont( "Timers" , 15 ,  QFont.Bold))
             self.ipAdr = self.click_get_ip()
             self.lineEditIP.setText(str(self.ipAdr))
             self.udp_server_start()

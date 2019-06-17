@@ -76,6 +76,9 @@ class Ui_MainWindow(object):
         self.listViewGroup = QtWidgets.QListView(self.centralwidget)
         self.listViewGroup.setGeometry(QtCore.QRect(560, 80, 291, 251))
         self.listViewGroup.setObjectName("listViewGroup")
+        self.labelGroupName = QtWidgets.QLabel(self.centralwidget)
+        self.labelGroupName.setGeometry(QtCore.QRect(10, 40, 221, 49))
+        self.labelGroupName.setObjectName("labelGroupName")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 893, 22))
@@ -114,5 +117,6 @@ class Ui_MainWindow(object):
         self.pushButtonRun.setText(_translate("MainWindow", "运行/发送/安装"))
         self.pushButtonUninstallDeb.setText(_translate("MainWindow", "卸载插件"))
         self.pushButtonUninstallApp.setText(_translate("MainWindow", "卸载App"))
+        self.labelGroupName.setText(_translate("MainWindow", "当前设备分组:"))
 
 

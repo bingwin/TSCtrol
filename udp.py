@@ -148,6 +148,8 @@ class Udpscanning(QMainWindow, Ui_MainWindow,FileTool):
 
     def getData(self,mGroup):
         self.model.removeRows(0, self.model.rowCount())
+        groupName =  "全部设备" if mGroup==0 else mGroup
+        self.labelGroupName.setText("当前设备分组: [ "+ groupName+" ]")
         mGroup = 0 if mGroup =="全部设备" else  mGroup
         try:
             config = configobj.ConfigObj(self.resource_path("resources/dev.ini"), encoding='UTF8')
