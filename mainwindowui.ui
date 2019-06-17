@@ -1,0 +1,365 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>893</width>
+    <height>906</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QTableView" name="tableViewDevice">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>80</y>
+      <width>511</width>
+      <height>661</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QWidget" name="horizontalLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>0</y>
+      <width>881</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLineEdit" name="lineEditIP">
+       <property name="placeholderText">
+        <string>请输入扫描的IP段</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushBtnScanning">
+       <property name="text">
+        <string>扫描设备</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushBtnClearDevice">
+       <property name="text">
+        <string>清空设备</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushBtnRepairTs">
+       <property name="text">
+        <string>清理脚本</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushBtnCheckStatus">
+       <property name="text">
+        <string>检测状态</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QCheckBox" name="cbCheckAllDevice">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>750</y>
+      <width>311</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>全/反选</string>
+    </property>
+   </widget>
+   <widget class="QTableView" name="tableViewScript">
+    <property name="geometry">
+     <rect>
+      <x>580</x>
+      <y>360</y>
+      <width>301</width>
+      <height>381</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QTextEdit" name="textEdit">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>770</y>
+      <width>416</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="readOnly">
+     <bool>true</bool>
+    </property>
+    <property name="placeholderText">
+     <string>设置脚本或者插件路径</string>
+    </property>
+   </widget>
+   <widget class="QWidget" name="gridLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>440</x>
+      <y>760</y>
+      <width>441</width>
+      <height>100</height>
+     </rect>
+    </property>
+    <layout class="QGridLayout" name="gridLayout">
+     <item row="1" column="1">
+      <widget class="QPushButton" name="pushButtonStop">
+       <property name="text">
+        <string>停止脚本</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="3">
+      <widget class="QPushButton" name="pushButtonReLogin">
+       <property name="text">
+        <string>注销</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="4">
+      <widget class="QPushButton" name="pushButtonReboot">
+       <property name="text">
+        <string>重启</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QPushButton" name="pushButtonRun">
+       <property name="text">
+        <string>运行/发送/安装</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QPushButton" name="pushButtonUninstallDeb">
+       <property name="text">
+        <string>卸载插件</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QPushButton" name="pushButtonUninstallApp">
+       <property name="text">
+        <string>卸载App</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QListView" name="listViewGroup">
+    <property name="geometry">
+     <rect>
+      <x>560</x>
+      <y>80</y>
+      <width>291</width>
+      <height>251</height>
+     </rect>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>893</width>
+     <height>22</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>pushBtnClearDevice</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>clearDevice()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>698</x>
+     <y>67</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>410</x>
+     <y>95</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushBtnRepairTs</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>repairTS()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>794</x>
+     <y>67</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>796</x>
+     <y>73</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushBtnCheckStatus</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>checkStatus()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>890</x>
+     <y>67</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>791</x>
+     <y>45</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushBtnScanning</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>scanningDevice()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>602</x>
+     <y>67</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>202</x>
+     <y>92</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cbCheckAllDevice</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>checkAllDevice()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>75</x>
+     <y>772</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>152</x>
+     <y>549</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>tableViewDevice</sender>
+   <signal>clicked(QModelIndex)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>checkClaculate()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>144</x>
+     <y>274</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>59</x>
+     <y>68</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButtonRun</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>runScript()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>498</x>
+     <y>802</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>522</x>
+     <y>741</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButtonStop</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>stopScript()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>612</x>
+     <y>794</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>629</x>
+     <y>733</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButtonReLogin</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>signOutDevice()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>697</x>
+     <y>797</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>711</x>
+     <y>722</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButtonReboot</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>rebootDevice()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>880</x>
+     <y>814</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>752</x>
+     <y>741</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>clearDevice()</slot>
+  <slot>repairTS()</slot>
+  <slot>checkStatus()</slot>
+  <slot>scanningDevice()</slot>
+  <slot>checkAllDevice()</slot>
+  <slot>checkClaculate()</slot>
+  <slot>runScript()</slot>
+  <slot>stopScript()</slot>
+  <slot>signOutDevice()</slot>
+  <slot>rebootDevice()</slot>
+ </slots>
+</ui>

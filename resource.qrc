@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>resources/ico/directory.icns</file>
+        <file>resources/ico/file.icns</file>
+        <file>resources/ico/directory.ico</file>
+        <file>resources/ico/file.ico</file>
+    </qresource>
+</RCC>
