@@ -77,7 +77,7 @@ class Ui_MainWindow(object):
         self.listViewGroup.setGeometry(QtCore.QRect(560, 80, 291, 251))
         self.listViewGroup.setObjectName("listViewGroup")
         self.labelGroupName = QtWidgets.QLabel(self.centralwidget)
-        self.labelGroupName.setGeometry(QtCore.QRect(10, 40, 221, 49))
+        self.labelGroupName.setGeometry(QtCore.QRect(10, 40, 511, 49))
         self.labelGroupName.setObjectName("labelGroupName")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
