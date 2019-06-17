@@ -155,7 +155,7 @@ class Udpscanning(QMainWindow, Ui_MainWindow,FileTool):
                 devname = config[key]['devname']
                 ip = config[key]['ip']
                 group =  config[key]['group']
-                if str(mGroup) == group:
+                if str(mGroup) == group or mGroup==0:
                     item_checked = QStandardItem()
                     item_checked.setCheckState(Qt.Unchecked)
                     item_checked.setCheckable(True)
