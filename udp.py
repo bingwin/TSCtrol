@@ -43,6 +43,7 @@ class Udpscanning(QMainWindow, Ui_MainWindow,FileTool):
                 config = configobj.ConfigObj(self.resource_path("resources/dev.ini"), encoding='UTF8')
             except:
                 return
+
             try:
                 print(config[did])
             except:
@@ -145,26 +146,42 @@ class Udpscanning(QMainWindow, Ui_MainWindow,FileTool):
 
         return my_addr
 
-    def getData(self):
+    def getData(self,mGroup):
+        self.model.removeRows(0, self.model.rowCount())
+        mGroup = 0 if mGroup =="全部设备" else  mGroup
         try:
             config = configobj.ConfigObj(self.resource_path("resources/dev.ini"), encoding='UTF8')
             for key in config.keys():
                 devname = config[key]['devname']
                 ip = config[key]['ip']
-                item_checked = QStandardItem()
-                item_checked.setCheckState(Qt.Unchecked)
-                item_checked.setCheckable(True)
-                self.model.appendRow([
-                    QStandardItem(item_checked),
-                    QStandardItem(key),
-                    QStandardItem(devname),
-                    QStandardItem(ip),
-                    QStandardItem(''),
-                ])
+                group =  config[key]['group']
+                if str(mGroup) == group:
+                    item_checked = QStandardItem()
+                    item_checked.setCheckState(Qt.Unchecked)
+                    item_checked.setCheckable(True)
+                    self.model.appendRow([
+                        QStandardItem(item_checked),
+                        QStandardItem(key),
+                        QStandardItem(devname),
+                        QStandardItem(ip),
+                        QStandardItem(''),
+                    ])
         except:
-            self.deletFaile(self.resource_path("resources/dev.ini"))
-            self.createFiles(self.resource_path("resources/dev.ini"))
+            self.writeFile(self.resource_path("resources/dev.ini"), "")
         self.actionHandler(6)
+
+    def getListData(self):
+        try:
+            config = configobj.ConfigObj(self.resource_path("resources/config.ini"), encoding='UTF8')
+            for key in config["Group"]:
+                row = self.listModel.rowCount()
+                # row = self.listViewGroup.currentIndex().row()
+                self.listModel.insertRows(int(row), 1)
+                self.listModel.setData(self.listModel.index(row), key)
+                print(key, row)
+        except:
+            self.writeFile(self.resource_path("resources/config.ini"), "")
+
 
     def resource_path(self, relative_path):
         cdir = QDir.homePath() +"/Documents/TSCtrolConfig"
