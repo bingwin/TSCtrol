@@ -10,6 +10,7 @@ from API.Order import Order
 from resources.ui.FormSnapShot import Ui_Form
 from API.myoss import OSS
 import re
+import configobj
 
 import resource
 
@@ -56,11 +57,16 @@ class MainWindow(Udpscanning,QWidget):
 
             self.listViewGroup.setGeometry(QRect(650, 80, 236, 190))
             self.listModel = QStringListModel()
-
             self.listViewGroup.setModel(self.listModel)
-            self.listViewGroup.setViewMode(QListView.IconMode)
+            self.listViewGroup.setEditTriggers(QAbstractItemView.NoEditTriggers)  # 不可编辑
+            row = self.listViewGroup.currentIndex().row()
+            if row == -1:
+                row = 0
+                self.listModel.insertRows(int(row), 1)
+                self.listModel.setData(self.listModel.index(row),"全部设备")
+            self.listViewGroup.doubleClicked.connect(lambda: self.getData(self.listModel.itemData(self.listViewGroup.currentIndex()).get(0)))
 
-
+            #self.listViewGroup.setViewMode(QListView.IconMode)
 
             self.tableViewScript.setGeometry(QRect(650, 280, 236, 451))
             self.tableViewScript.doubleClicked.connect(lambda: self.getOssDir(self.tableViewScript.currentIndex().row()))
@@ -82,7 +88,8 @@ class MainWindow(Udpscanning,QWidget):
             self.creeatFloder(self.resource_path("resources/root/deb"))
             self.creeatFloder(self.resource_path("resources/root/plugin"))
             self.createFiles(self.resource_path("resources/dev.ini"))
-            self.getData()
+            self.getData(0)
+            self.getListData()
             self.createRightMenu()
             self.sWindow = RemoteWindow()
             self.isSelect = False
@@ -160,32 +167,79 @@ class MainWindow(Udpscanning,QWidget):
             self.tableViewDevice.customContextMenuRequested.connect(self.showContextMenu1)
 
             self.contextMenu1 = QMenu(self)
-            self.actionA = self.contextMenu1.addAction(u'勾选选中')
-            self.actionB = self.contextMenu1.addAction(u'取消勾选')
-            self.actionC = self.contextMenu1.addAction(u'全部勾选')
-            self.actionD = self.contextMenu1.addAction(u'全部取消')
+            self.Menu1_actionA = self.contextMenu1.addAction(u'勾选选中')
+            self.Menu1_actionB = self.contextMenu1.addAction(u'取消勾选')
+            self.Menu1_actionC = self.contextMenu1.addAction(u'全部勾选')
+            self.Menu1_actionD = self.contextMenu1.addAction(u'全部取消')
+            self.Menu1_actionG = self.contextMenu1.addAction(u'加入分组')
             self.contextMenu1.addSeparator()
-            self.actionE = self.contextMenu1.addAction(u'远程屏幕')
-            self.actionF = self.contextMenu1.addAction(u'查看日志')
-            self.actionA.triggered.connect(lambda:self.actionHandler(1))
-            self.actionB.triggered.connect(lambda:self.actionHandler(2))
-            self.actionC.triggered.connect(lambda:self.actionHandler(3))
-            self.actionD.triggered.connect(lambda:self.actionHandler(4))
-            self.actionE.triggered.connect(lambda:self.showSnapShotWindow(self.tableViewDevice.model().item(self.tableViewDevice.currentIndex().row(),3).text(),1))
-            self.actionF.triggered.connect(lambda:self.showSnapShotWindow(self.tableViewDevice.model().item(self.tableViewDevice.currentIndex().row(),3).text(),2))
-
+            self.Menu1_actionE = self.contextMenu1.addAction(u'远程屏幕')
+            self.Menu1_actionF = self.contextMenu1.addAction(u'查看日志')
+            self.Menu1_actionA.triggered.connect(lambda:self.actionHandler(1))
+            self.Menu1_actionB.triggered.connect(lambda:self.actionHandler(2))
+            self.Menu1_actionC.triggered.connect(lambda:self.actionHandler(3))
+            self.Menu1_actionD.triggered.connect(lambda:self.actionHandler(4))
+            self.Menu1_actionE.triggered.connect(lambda:self.showSnapShotWindow(self.tableViewDevice.model().item(self.tableViewDevice.currentIndex().row(),3).text(),1))
+            self.Menu1_actionF.triggered.connect(lambda:self.showSnapShotWindow(self.tableViewDevice.model().item(self.tableViewDevice.currentIndex().row(),3).text(),2))
+            self.Menu1_actionG.triggered.connect(lambda:self.changeDevGroup())
 
             self.tableViewScript.setContextMenuPolicy(Qt.CustomContextMenu)
             self.tableViewScript.customContextMenuRequested.connect(self.showContextMenu2)
             self.contextMenu2 = QMenu(self)
-            self.actionH = self.contextMenu2.addAction(u'下载文件')
-            self.actionI = self.contextMenu2.addAction(u'上传文件')
-            self.actionJ = self.contextMenu2.addAction(u'删除文件')
-            self.actionK = self.contextMenu2.addAction(u'刷新目录')
-            self.actionH.triggered.connect(lambda:self.downloadFileAction(self.tableViewScript.currentIndex().row()))
-            self.actionI.triggered.connect(lambda:self.uploadFileAction())
-            self.actionJ.triggered.connect(lambda:self.deleteFileAction(self.tableViewScript.currentIndex().row()))
-            self.actionK.triggered.connect(lambda:self.getOssDir(0,True))
+            self.Menu2_actionA = self.contextMenu2.addAction(u'下载文件')
+            self.Menu2_actionB = self.contextMenu2.addAction(u'上传文件')
+            self.Menu2_actionC = self.contextMenu2.addAction(u'删除文件')
+            self.Menu2_actionD = self.contextMenu2.addAction(u'刷新目录')
+            self.Menu2_actionA.triggered.connect(lambda:self.downloadFileAction(self.tableViewScript.currentIndex().row()))
+            self.Menu2_actionB.triggered.connect(lambda:self.uploadFileAction())
+            self.Menu2_actionC.triggered.connect(lambda:self.deleteFileAction(self.tableViewScript.currentIndex().row()))
+            self.Menu2_actionD.triggered.connect(lambda:self.getOssDir(0,True))
+
+            self.listViewGroup.setContextMenuPolicy(Qt.CustomContextMenu)
+            self.listViewGroup.customContextMenuRequested.connect(self.showContextMenu3)
+            self.contextMenu3 = QMenu(self)
+            self.Menu3_actionA = self.contextMenu3.addAction(u'创建分组')
+            self.Menu3_actionB = self.contextMenu3.addAction(u'删除分组')
+            self.Menu3_actionA.triggered.connect(lambda: self.CreatDevGroup())
+            self.Menu3_actionB.triggered.connect(lambda: self.DeleteDevGroup())
+        def CreatDevGroup(self):
+            gname, ok = QInputDialog.getText(self, "创建分组", "输入创建的分组名称")
+            if ok:
+                row = self.listModel.rowCount()
+                self.listModel.insertRows(int(row),1)
+                self.listModel.setData(self.listModel.index(row),gname)
+                config = configobj.ConfigObj(self.resource_path("resources/config.ini"), encoding='UTF8')
+                try:
+                    print(config["Group"])
+                except:
+                    config["Group"] = {}
+                config["Group"][gname] = row
+                config.write()
+
+
+        def DeleteDevGroup(self):
+            print("DeleteDevGroup")
+            row =self.listViewGroup.currentIndex().row()
+            if row>0:
+                gname = self.listModel.itemData(self.listViewGroup.currentIndex()).get(0)
+                self.listModel.removeRow(row)
+                config = configobj.ConfigObj(self.resource_path("resources/config.ini"), encoding='UTF8')
+                del config["Group"][gname]
+                config.write()
+
+
+        def changeDevGroup(self):
+            print("changeDevGroup")
+            gname = self.listModel.itemData(self.listViewGroup.currentIndex()).get(0)
+            if gname:
+                rows = self.model.rowCount()
+                for i in range(rows):
+                    if self.model.item(i, 0).checkState() == 2:
+                        did = self.model.item(i, 1).text()
+                        config = configobj.ConfigObj(self.resource_path("resources/dev.ini"), encoding='UTF8')
+                        config[did]['group'] = gname
+                        config.write()
+
         def downloadFileAction(self,row):
             name = self.modelSp.item(row,0).text()
             cloudPath = self.modelSp.item(row,1).text()
@@ -212,7 +266,7 @@ class MainWindow(Udpscanning,QWidget):
                 OSS.deleteFile(self, cloudPath)
                 self.getOssDir(0, True)
 
-        def actionHandler(self,order):#计算勾选数量
+        def actionHandler(self,order):#计算勾选数量 并勾选
             checkNum = 0
             allDevice = 0
             if order == 1 or order == 2 :
@@ -252,6 +306,9 @@ class MainWindow(Udpscanning,QWidget):
 
         def showContextMenu2(self, pos):
             self.contextMenu2.exec_(QCursor.pos())  # 在鼠标位置显示
+
+        def showContextMenu3(self, pos):
+            self.contextMenu3.exec_(QCursor.pos())  # 在鼠标位置显示
 
         def checkClaculate(self): #点击表格事件
             index = self.tableViewDevice.currentIndex()
