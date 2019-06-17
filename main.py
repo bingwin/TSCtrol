@@ -165,7 +165,6 @@ class MainWindow(Udpscanning,QWidget):
         def createRightMenu(self):
             self.tableViewDevice.setContextMenuPolicy(Qt.CustomContextMenu)
             self.tableViewDevice.customContextMenuRequested.connect(self.showContextMenu1)
-
             self.contextMenu1 = QMenu(self)
             self.Menu1_actionA = self.contextMenu1.addAction(u'勾选选中')
             self.Menu1_actionB = self.contextMenu1.addAction(u'取消勾选')
