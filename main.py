@@ -1,16 +1,18 @@
 from PyQt5.Qt import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QRegExpValidator
-from PyQt5.QtCore import QRegExp,Qt,QTime,QRect
-from PyQt5.QtWidgets import QMessageBox,QWidget
+from PyQt5.QtCore import QRegExp,Qt,QTime,QRect,pyqtSignal
+from PyQt5.QtWidgets import QMessageBox,QWidget,QDialog
 
 from udp import Udpscanning
 from queue import Queue
-from API.Order import Order
 from resources.ui.FormSnapShot import Ui_Form
+from API.Order import Order
 from API.myoss import OSS
+from API.Threads import *
 import re
 import configobj
+import threading
 
 import resource
 
@@ -23,6 +25,8 @@ import resource
 '''
 
 class MainWindow(Udpscanning,QWidget):
+        communicate = pyqtSignal(dict)
+        communicate_2 = pyqtSignal(int)
         def __init__(self):
             super().__init__()
             self.setupUi(self)
@@ -57,6 +61,9 @@ class MainWindow(Udpscanning,QWidget):
             self.tableViewScript.horizontalHeader().setSectionResizeMode(1, QHeaderView.Fixed)   #固定列宽
             self.tableViewScript.horizontalHeader().setSectionResizeMode(2, QHeaderView.Fixed)   #固定列宽
 
+            self.tableViewScript.setGeometry(QRect(650, 280, 236, 441))
+            self.progressBarFile.setGeometry(QRect(650, 720, 236, 25))
+            self.progressBarFile.setValue(100)
             self.listViewGroup.setGeometry(QRect(650, 80, 236, 190))
             self.listModel = QStringListModel()
             self.listViewGroup.setModel(self.listModel)
@@ -70,7 +77,6 @@ class MainWindow(Udpscanning,QWidget):
 
             #self.listViewGroup.setViewMode(QListView.IconMode)
 
-            self.tableViewScript.setGeometry(QRect(650, 280, 236, 451))
             self.tableViewScript.doubleClicked.connect(lambda: self.getOssDir(self.tableViewScript.currentIndex().row()))
             self.tableViewDevice.doubleClicked.connect(lambda: self.showSnapShotWindow(self.tableViewDevice.model().item(self.tableViewDevice.currentIndex().row(), 3).text(), 1))
 
@@ -97,6 +103,9 @@ class MainWindow(Udpscanning,QWidget):
             self.sWindow = RemoteWindow()
             self.isSelect = False
             self.getOssDir(-1)
+            self.pool = QThreadPool()  # 创建线程池
+            self.pool.globalInstance()  # 获得这个全局线程池
+
         def clearDevice(self):
             print("清空设备")
             reply = QMessageBox.question(self, "清空设备", "是否清空设备", QMessageBox.Yes | QMessageBox.No)
@@ -110,6 +119,7 @@ class MainWindow(Udpscanning,QWidget):
             reply = QMessageBox.question(self, "清理脚本", "是否清理脚本", QMessageBox.Yes | QMessageBox.No)
             if reply == QMessageBox.Yes:
                 self.ThreadCtorl(Order.ORDER_ORDER_DELALLLUA)
+
         def checkStatus(self):
             print("检测状态")
             self.ThreadCtorl(Order.ORDER_STATUS)
@@ -234,13 +244,24 @@ class MainWindow(Udpscanning,QWidget):
             print("changeDevGroup")
             gname = self.listModel.itemData(self.listViewGroup.currentIndex()).get(0)
             if gname:
-                rows = self.model.rowCount()
-                for i in range(rows):
-                    if self.model.item(i, 0).checkState() == 2:
-                        did = self.model.item(i, 1).text()
-                        config = configobj.ConfigObj(self.resource_path("resources/dev.ini"), encoding='UTF8')
-                        config[did]['group'] = gname
-                        config.write()
+                reply = QMessageBox.question(self, "转移设备", "是否转移设备到 ["+gname+"] 分组", QMessageBox.Yes | QMessageBox.No)
+                if reply == QMessageBox.Yes:
+                    rows = self.model.rowCount()
+                    def work(rows):
+                        j = 0
+                        for i in range(rows):
+                            if self.model.item(i, 0).checkState() == 2:
+                                did = self.model.item(i, 1).text()
+                                config = configobj.ConfigObj(self.resource_path("resources/dev.ini"), encoding='UTF8')
+                                config[did]['group'] = gname
+                                config.write()
+                                j+=1
+                                self.statusbar.showMessage("转移数量  :"+ str(j))
+                        self.statusbar.showMessage("转移完毕")
+                    t = threading.Thread(target=work, args=(rows,))
+                    t.start()
+            else:
+                QMessageBox.warning(self,"转移设备","请点击选择设备分组")
 
         def downloadFileAction(self,row):
             name = self.modelSp.item(row,0).text()
@@ -251,16 +272,26 @@ class MainWindow(Udpscanning,QWidget):
                 return
             filepath = QFileDialog.getSaveFileName(self,r"保存文件",self.resource_path("resources/"+cloudPath),r"所有文件 (*)")
             if not filepath[0] == '':
-                OSS.downloadFile(self,cloudPath,filepath[0])
+                def work(cloudPath,filePath):
+                    self.communicate_2.connect(self.progressBarFile.setValue)
+                    OSS.downloadFile(self,cloudPath,filePath)
+                t = threading.Thread(target=work, args=(cloudPath,filepath[0],))
+                t.start()
+
         def uploadFileAction(self):
             print("上传")
             filePath = QFileDialog.getOpenFileName(self, "上传文件", self.resource_path("resources/"),"所有文件 (*)")
             cloudPath = self.modelSp.item(0, 1).text()
             if not filePath[0] == '':
-                fileName = self.getFileName(filePath[0])
-                localPath = filePath[0]
-                OSS.uploadFile(self,cloudPath+fileName,localPath)
-                self.getOssDir(0,True)
+                def work(filePath):
+                    self.communicate_2.connect(self.progressBarFile.setValue)
+                    fileName = self.getFileName(filePath)
+                    localPath = filePath
+                    OSS.uploadFile(self, cloudPath + fileName, localPath)
+                    self.getOssDir(0, True)
+                t = threading.Thread(target=work, args=(filePath[0],))
+                t.start()
+
         def deleteFileAction(self,row):
             cloudPath = self.modelSp.item(row, 1).text()
             reply = QMessageBox.question(self, "删除云文件", "是否删除此文件", QMessageBox.Yes | QMessageBox.No)
@@ -371,15 +402,14 @@ class MainWindow(Udpscanning,QWidget):
                 if reply == QMessageBox.Yes:
                     self.ThreadCtorl(Order.ORDER_UNINSTALLAPP)
 
-        def ThreadCtorl(self,order,filePath ="",isAll=False): #多线程控制器
+        def ThreadCtorl(self,order,filePath =""): #多线程控制器
             queueDevice = Queue()
             #fileName =self.getFileName(filePath)
             fileName = filePath if order==Order.ORDER_UNINSTALLAPP or order == Order.ORDER_UNINSTALLDEB else self.getFileName(filePath)
-
             rows = self.model.rowCount()
-            data = self.readFile(filePath)
+            data = "" if filePath == "" else self.readFile(filePath)
             for i in range(rows):
-                if isAll == True or self.model.item(i, 0).checkState() == 2:
+                if self.model.item(i, 0).checkState() == 2:
                     self.model.item(i, 4).setText(u"队列等待")
                     items = {
                         "index":i,
@@ -389,22 +419,22 @@ class MainWindow(Udpscanning,QWidget):
                         "fileData":data,
                     }
                     queueDevice.put(items)
-
-
+            self.pool.setMaxThreadCount(10)
             while True :
                 if queueDevice.empty():
                     print("消息列队为空")
                     break
-                for i in range(0,1):
+                for i in range(0,10):
                     try:
                         items = queueDevice.get_nowait()
                     except:
                         return
-                    thread = OrderThread(self,items)
+                    othread = OrderThread()
+                    othread.transfer(items=items,communicate=self.communicate)
                     def setStatus(items):
                         self.model.item(items["index"],4).setText(items["status"])
-                    thread.getOrderStatus.connect(setStatus)
-                    thread.start()
+                    self.communicate.connect(setStatus)
+                    self.pool.start(othread)
                 print("结束线程")
         def getOssDir(self,row,cur=False):
             floder="root/"
@@ -447,6 +477,34 @@ class MainWindow(Udpscanning,QWidget):
                     self.modelSp.item(self.modelSp.rowCount()-1,0).setIcon(icon)
 
 
+class MyDialog(QDialog):#继承QDialog类
+    def __init__(self):
+        super().__init__()
+        self.initUI()
+        # self.exec()
+
+    def initUI(self):
+        self.setWindowTitle("转移分组")
+        self.resize(100, 100)
+
+        self.pro = QProgressBar()
+        self.game_item = QComboBox()  # 建立一个下拉列表框
+
+        self.buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)  # 窗口中建立确认和取消按钮
+        self.glayout = QGridLayout()
+
+        self.glayout.addWidget(self.game_item, 0, 0)
+        self.glayout.addWidget(self.pro, 1, 0)
+        try:
+            config = configobj.ConfigObj(self.resource_path("resources/config.ini"), encoding='UTF8')
+            for key in config["Group"]:
+                self.game_item.addItem(key)
+        except:
+            self.writeFile(self.resource_path("resources/config.ini"), "")
+
+        self.setLayout(self.glayout)
+
+
 
 
 class RemoteWindow(QWidget,Ui_Form):
@@ -483,7 +541,7 @@ class RemoteWindow(QWidget,Ui_Form):
             "fileName": "",
             "fileData": "",
         }
-        thread = OrderThread(self, self.items)
+        thread = SnapThread(self, self.items)
         def setLog(items):
             # data = bytes(items["status"],encoding="unicode")
             log = items["status"]
@@ -499,7 +557,7 @@ class RemoteWindow(QWidget,Ui_Form):
             "fileName":"",
             "fileData":"",
         }
-        thread = OrderThread(self, self.items)
+        thread = SnapThread(self, self.items)
         def getPix(items):
             photo = QPixmap()
             try:
@@ -525,17 +583,6 @@ class RemoteWindow(QWidget,Ui_Form):
         except:
             pass
 
-class OrderThread(QThread):
-    getOrderStatus = pyqtSignal(dict)
-    def __init__(self, parent=None,items=None):
-        super(OrderThread, self).__init__(parent)
-        self.items = items
-
-
-    def run(self):
-        status = Order.TSAPI(self.items)
-        self.items["status"] = status
-        self.getOrderStatus.emit(self.items)
 
 if __name__ == '__main__':
     import  sys

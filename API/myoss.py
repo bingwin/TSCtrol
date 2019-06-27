@@ -1,7 +1,8 @@
-
 import oss2
 from PyQt5.Qt import *
 import os
+import sys
+from PyQt5.QtCore import pyqtSignal
 
 class OSS(QObject):
     access_key_id = os.getenv('OSS_TEST_ACCESS_KEY_ID', 'LTAIQQ7KYIkJui5Q')
@@ -10,7 +11,6 @@ class OSS(QObject):
     path = os.path.abspath('.')
     dir_path = os.path.abspath('')
     dirs = os.listdir(path)
-
     bucket = oss2.Bucket(oss2.Auth(access_key_id, access_key_secret), endpoint, bucket_name="code-55331")
     def showBucket(cls):
         print("**********   获取bucket信息  *******")
@@ -32,7 +32,7 @@ class OSS(QObject):
                              input=oss2.models.BucketCreateConfig(oss2.BUCKET_STORAGE_CLASS_STANDARD))
         if oss2.Bucket(oss2.Auth(access_key_id, access_key_secret), endpoint, bucket_name=bucket_input):
             print("     成功创建%s" %bucket_input)
-            showBucket()
+
         print("***************************")
 
     def bucketInfo(cls):
@@ -57,29 +57,6 @@ class OSS(QObject):
 
 
 
-    def upload(cls):
-        print("**********   上传  *******")
-        bucket_input = input('请输入要传入的bucket名：   ')
-        print("**************************")
-        print("     当前目录下所有文件：")
-        for file in dirs:
-            print(file)
-        print("***************************")
-
-        filename = input('请输入要上传的文件名： ')
-        cloud_name = input('请输入云端文件名：   ')
-        bucket = oss2.Bucket(oss2.Auth(access_key_id, access_key_secret), endpoint, bucket_name=bucket_input)
-        with open(oss2.to_unicode(filename), 'rb') as f:
-            bucket.put_object(cloud_name, f)
-        meta = bucket.get_object_meta(cloud_name)
-        if meta:
-            print("     上传成功")
-            print("     云端所有文件：")
-            for i in oss2.ObjectIterator(bucket):
-                print(i.key)
-
-        else:
-            print("     上传失败")
 
 
 
@@ -139,17 +116,32 @@ class OSS(QObject):
                 i+=1
             return ret
 
-    def downloadFile(cls,cloud_name,file_name):
+    # 上传下载进度
+
+
+
+    def downloadFile(self,cloud_name,file_name,):
         print("**********   下载  *******")
-        OSS.bucket.get_object_to_file(cloud_name, file_name)
+        def percentage(consumed_bytes, total_bytes):
+            if total_bytes:
+                rate = int(100 * (float(consumed_bytes) / float(total_bytes)))
+                self.communicate_2.emit(rate)
+
+        OSS.bucket.get_object_to_file(cloud_name, file_name,progress_callback=percentage)
         if file_name[4:] in os.listdir(OSS.dir_path):
             return True
         else:
             return False
 
-    def uploadFile(cls,cloud_name,filename):
+    def uploadFile(self,cloud_name,filename):
+        def percentage(consumed_bytes, total_bytes):
+            if total_bytes:
+                rate = int(100 * (float(consumed_bytes) / float(total_bytes)))
+                self.communicate_2.emit(rate)
+                print('\r{0}% '.format(rate), end='')
+
         with open(oss2.to_unicode(filename), 'rb') as f:
-            OSS.bucket.put_object(cloud_name, f)
+            OSS.bucket.put_object(cloud_name, f,progress_callback=percentage)
         meta =  OSS.bucket.get_object_meta(cloud_name)
         if meta:
             return True

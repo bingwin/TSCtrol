@@ -168,6 +168,7 @@ class Udpscanning(QMainWindow, Ui_MainWindow,FileTool):
                         QStandardItem(ip),
                         QStandardItem(''),
                     ])
+            self.tableViewDevice.repaint()
         except:
             self.writeFile(self.resource_path("resources/dev.ini"), "")
         self.actionHandler(6)

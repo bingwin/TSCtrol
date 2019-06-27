@@ -1,16 +1,31 @@
-import sys
-import os
-from  PyQt5.Qt import *
-
-print(QDir.currentPath())
+from PyQt5 import QtWidgets, QtCore
+from resources.ui.FormSnapShot import Ui_Form
+import time
 
 
-def creeatFloder(floderName):
+class MyWindow(QtWidgets.QWidget,Ui_Form):
+    _signal = QtCore.pyqtSignal(str)  # 定义信号,定义参数为str类型
 
-    if not os.path.exists(floderName):
-        os.makedirs(floderName)
-    else:
-        print(floderName + " already existed")
+    def __init__(self):
+        super(MyWindow, self).__init__()
+        self.setupUi(self)
+        self.myButton.clicked.connect(self.myPrint)
+        self._signal.connect(self.mySignal)  # 将信号连接到函数mySignal
+
+    def myPrint(self):
+        self.tb.setText("")
+        self.tb.append("正在打印，请稍候")
+        self._signal.emit("你妹，打印结束了吗，快回答！")
+
+    def mySignal(self, string):
+        print(string)
+        self.tb.append("打印结束")
 
 
-creeatFloder("/Users/tieniu/resources")
+if __name__ == "__main__":
+    import sys
+
+    app = QtWidgets.QApplication(sys.argv)
+    myshow = MyWindow()
+    myshow.show()
+    sys.exit(app.exec_())

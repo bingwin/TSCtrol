@@ -90,7 +90,7 @@
       <x>580</x>
       <y>360</y>
       <width>301</width>
-      <height>381</height>
+      <height>341</height>
      </rect>
     </property>
    </widget>
@@ -185,6 +185,19 @@
     </property>
     <property name="text">
      <string>当前设备分组:</string>
+    </property>
+   </widget>
+   <widget class="QProgressBar" name="progressBarFile">
+    <property name="geometry">
+     <rect>
+      <x>580</x>
+      <y>660</y>
+      <width>289</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="value">
+     <number>21</number>
     </property>
    </widget>
   </widget>
